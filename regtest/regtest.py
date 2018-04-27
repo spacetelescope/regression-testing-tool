@@ -58,6 +58,7 @@ pipelines = {
     'NIS_LAMP': [Detector1Pipeline],
     'NRC_DARK': [DarkPipeline],
     'MIR_DARK': [DarkPipeline],
+    'NIS_DARK': [DarkPipeline],
     'MIR_LRS-FIXEDSLIT': [Detector1Pipeline, Spec2Pipeline]
 }
 
