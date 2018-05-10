@@ -34,7 +34,7 @@ pipelines = {
     'MIR_CORONCAL': [Detector1Pipeline, Image2Pipeline],
     'MIR_DARK': [DarkPipeline],
     'MIR_FLATIMAGE': [Detector1Pipeline],
-    'MIR_LRS-FIXEDSLIT': [Detector1Pipeline, Spec2Pipeline]
+    'MIR_LRS-FIXEDSLIT': [Detector1Pipeline, Spec2Pipeline],
     'NRC_IMAGE': [Detector1Pipeline, Image2Pipeline],
     'NRC_FOCUS': [Detector1Pipeline, Image2Pipeline],
     'NRC_LED': [Detector1Pipeline],
@@ -67,7 +67,7 @@ pipelines = {
     'NIS_SOSS': [Detector1Pipeline, Spec2Pipeline],
     'NIS_AMI': [Detector1Pipeline, Image2Pipeline],
     'NIS_LAMP': [Detector1Pipeline],
-    'NIS_DARK': [DarkPipeline],
+    'NIS_DARK': [DarkPipeline]
 }
 
 skip_list = [
