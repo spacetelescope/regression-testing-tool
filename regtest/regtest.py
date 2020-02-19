@@ -7,6 +7,8 @@ import os
 import multiprocessing as mp
 import datetime
 import logging
+import glob
+import json
 
 try:
     from cStringIO import StringIO  # Python 2
@@ -44,36 +46,36 @@ pipelines = {
     'MIR_FLATMRS-EXT':[jwst.pipeline.Detector1Pipeline],
     'MIR_TACQ':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'MIR_CORONCAL':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
-    'MIR_IMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Image3Pipeline],
-    'MIR_LRS-FIXEDSLIT':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'MIR_LRS-SLITLESS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Tso3Pipeline],
-    'FALSE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'MIR_MRS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'MIR_LYOT':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Coron3Pipeline],
-    'MIR_4QPM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Coron3Pipeline],
+    'MIR_IMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'MIR_LRS-FIXEDSLIT':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'MIR_LRS-SLITLESS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'FALSE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'MIR_MRS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'MIR_LYOT':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'MIR_4QPM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NRC_DARK':[jwst.pipeline.DarkPipeline],
     'NRC_FLAT':[jwst.pipeline.Detector1Pipeline],
     'NRC_LED':[jwst.pipeline.Detector1Pipeline],
-    'NRC_GRISM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
+    'NRC_GRISM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
     'NRC_TACQ':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NRC_TACONFIRM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NRC_FOCUS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
-    'NRC_IMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Image3Pipeline],
-    'NRC_CORON':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Coron3Pipeline],
-    'NRC_WFSS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'NRC_TSIMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Tso3Pipeline],
-    'NRC_TSGRISM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Tso3Pipeline],
+    'NRC_IMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'NRC_CORON':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'NRC_WFSS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'NRC_TSIMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'NRC_TSGRISM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NIS_DARK':[jwst.pipeline.DarkPipeline],
     'NIS_LAMP':[jwst.pipeline.Detector1Pipeline],
     'NIS_EXTCAL':[jwst.pipeline.Detector1Pipeline],
     'NIS_TACQ':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NIS_TACONFIRM':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NIS_FOCUS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
-    'NIS_IMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Image3Pipeline],
-    'NIS_AMI':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Ami3Pipeline],
-    'NIS_WFSS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'NIS_SOSS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Tso3Pipeline],
-    'FALSE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
+    'NIS_IMAGE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'NIS_AMI':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'NIS_WFSS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'NIS_SOSS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
+    'FALSE':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
     'NRS_DARK':[jwst.pipeline.DarkPipeline],
     'NRS_AUTOWAVE':[jwst.pipeline.Detector1Pipeline],
     'NRS_AUTOFLAT':[jwst.pipeline.Detector1Pipeline],
@@ -85,57 +87,21 @@ pipelines = {
     'NRS_FOCUS':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NRS_MIMF':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline],
     'NRS_LAMP':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
-    'NRS_FIXEDSLIT':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'NRS_IFU':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'NRS_MSASPEC':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline,jwst.pipeline.Spec3Pipeline],
-    'NRS_BRIGHTOBJ':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline,jwst.pipeline.Tso3Pipeline]
+    'NRS_FIXEDSLIT':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'NRS_IFU':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'NRS_MSASPEC':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Spec2Pipeline],
+    'NRS_BRIGHTOBJ':[jwst.pipeline.Detector1Pipeline,jwst.pipeline.Image2Pipeline]
 }
 
-#    'MIR_IMAGE': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'MIR_LRS-SLITLESS': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'MIR_FLATMRS': [jwst.pipeline.Detector1Pipeline],
-#    'MIR_MRS': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'MIR_LYOT': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'MIR_4QPM': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'MIR_CORONCAL': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'MIR_DARK': [jwst.pipeline.DarkPipeline],
-#    'MIR_FLATIMAGE': [jwst.pipeline.Detector1Pipeline],
-#    'MIR_LRS-FIXEDSLIT': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NRC_IMAGE': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRC_FOCUS': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRC_LED': [jwst.pipeline.Detector1Pipeline],
-#    'NRC_DARK': [jwst.pipeline.DarkPipeline],
-#    'NRC_CORON': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_DARK':[jwst.pipeline.DarkPipeline],
-#    'NRS_FIXEDSLIT': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NRS_AUTOWAVE': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NRS_IFU': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NRS_IMAGE': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_CONFIRM': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_TACONFIRM': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_TACQ' : [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_TASLIT': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_AUTOFLAT': [jwst.pipeline.Detector1Pipeline],
-#    'NRS_MSASPEC': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NRS_WATA': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_MSATA': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_FOCUS': [jwst.pipeline.Detector1Pipeline],
-#    'NRS_LAMP': [jwst.pipeline.Detector1Pipeline],
-#    'NRS_MSASPEC': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NRS_MIMF': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NRS_BRIGHTOBJ': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'FGS_FOCUS': [jwst.pipeline.Detector1Pipeline],
-#    'FGS_INTFLAT': [jwst.pipeline.Detector1Pipeline],
-#    'FGS_IMAGE': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NIS_FOCUS': [jwst.pipeline.Detector1Pipeline],
-#    'NIS_IMAGE': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline, jwst.pipeline.Image3Pipeline],
-#    'NIS_WFSS': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NIS_SOSS': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Spec2Pipeline],
-#    'NIS_AMI': [jwst.pipeline.Detector1Pipeline, jwst.pipeline.Image2Pipeline],
-#    'NIS_LAMP': [jwst.pipeline.Detector1Pipeline],
-#    'NIS_DARK': [jwst.pipeline.DarkPipeline]
-#}
+level3 = {'ami3':jwst.pipeline.Ami3Pipeline, 'coron3':jwst.pipeline.Coron3Pipeline,
+        'image3':jwst.pipeline.Image3Pipeline, 'spec3':jwst.pipeline.Spec3Pipeline,
+        'tso3':jwst.pipeline.Tso3Pipeline}
 
+##other cases  not added here
+#        'tso-image2':'tso-image2',
+#        'tso-spec2':'tso-spec2', 'wfs-image2':'wfs-image2',
+#        'wfs-image3':'wfs-image3'}
+#        'image2':'image2', 'nrslamp-spec2':'nrslamp-spec2', 'spec2':'spec2',
 skip_list = [
     '/grp/jwst/ins/mary/b7.1rc3_sic_dil/jw84600036001_02101_00001_nrs2_uncal.fits',
     '/grp/jwst/ins/mary/b7.1rc3_sic_dil/jw84600039001_02101_00001_nrs2_uncal.fits',
@@ -152,6 +118,55 @@ def get_keyword(keyword, header):
         return str(header[keyword])
     else:
         return str(None)
+
+def run_level3(args):
+    # redirect pipeline log from sys.stderr to a string
+    log_stream = StringIO()
+    strun_log = logging.Logger.manager.loggerDict['stpipe']
+    strun_log.handlers[0].stream = log_stream
+
+    fname, report = args
+
+    #in here open the json file and read the asn_type
+    with open (fname, 'r') as jfile:
+        jdata=jfile.read()
+
+    #parse file
+    obj = json.loads(jdata)
+
+    #put in a variable asn_type
+    asn_type = str(obj['asn_type'])
+
+    step3 = level3[asn_type]
+    try:
+        print('running level 3 pipeline ',step3,' for file ',fname)
+        step3.call(fname, save_results=True)
+
+        with open(report, 'a') as f:
+            f.write('\t'.join(
+                [os.path.abspath(fname), '"-"', '"-"', '"-"', asn_type,
+                 '"-"', '"-"', '"-"', '"-"', '"-"','"-"',
+                 '"-"', '"-"', '"-"', '"-"', '"-"','"-"',
+                 '"SUCCESS"', '" "', '\n']))
+
+    except Exception as err:
+
+        result = 'FAILURE'
+        error = '{} - "{}"'.format(step3, str(err))
+
+        with open(report, 'a') as f:
+            f.write('\t'.join(
+                [os.path.abspath(fname), '"-"', '"-"', '"-"', asn_type,
+                 '"-"', '"-"', '"-"', '"-"', '"-"','"-"',
+                 '"-"', '"-"', '"-"', '"-"', '"-"','"-"',
+                 '"FAILED"', '"{}"'.format(str(error)), '\n']))
+    finally:
+
+        # write the pipeline log to a file
+        with open(os.path.basename(fname).replace('fits', 'log'), 'w') as f:
+            f.write(log_stream.getvalue())
+
+
 
 
 def run_pipeline(args):
@@ -262,13 +277,23 @@ def main(args):
     query = session.query(RegressionData).filter_by(**params)
     print('found {} matching files'.format(query.count()))
     files=[]
+    json_files=[]
     files0 = [data.filename for data in query]
     path0= [data.path for data in query]
     for i in range(len(files0)):
       files.append(path0[i]+'/'+files0[i])
     print(os.getcwd())
 
+    path01=''
+    for i in range(len(path0)):
+        if path01 != path0[i]:
+           path01 = path0[i]
+           json_files0=glob.glob(path0[i]+'/'+"*.json")
+           for j in range(len(json_files0)):
+              json_files.append(json_files0[j])
+
     p.map(run_pipeline, zip(files, [args.report] * len(files)))
+    p.map(run_level3, zip(json_files, [args.report] * len(json_files)))
 
 
 def regression_test():
