@@ -126,6 +126,7 @@ def run_level3(args):
     strun_log.handlers[0].stream = log_stream
 
     fname, report = args
+    print('level3: ',fname, report)
 
     #in here open the json file and read the asn_type
     with open (fname, 'r') as jfile:
@@ -144,7 +145,7 @@ def run_level3(args):
 
         with open(report, 'a') as f:
             f.write('\t'.join(
-                [os.path.abspath(fname), '"-"', '"-"', '"-"', asn_type,
+                [os.path.abspath(fname), '"level3"', '"-"', '"-"', asn_type,
                  '"-"', '"-"', '"-"', '"-"', '"-"','"-"',
                  '"-"', '"-"', '"-"', '"-"', '"-"','"-"',
                  '"SUCCESS"', '" "', '\n']))
@@ -163,7 +164,7 @@ def run_level3(args):
     finally:
 
         # write the pipeline log to a file
-        with open(os.path.basename(fname).replace('fits', 'log'), 'w') as f:
+        with open(os.path.basename(fname).replace('json', 'log'), 'w') as f:
             f.write(log_stream.getvalue())
 
 
